@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const cardStyle = {
   background: 'rgba(255,255,255,0.98)',
@@ -88,25 +89,59 @@ if (!styleSheet) {
   document.head.appendChild(style);
 }
 
+const roomTypes = [
+  'Standard Room',
+  'Executive Room',
+  'Double Room',
+  'Family Room',
+];
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 const Booking = () => {
+  const query = useQuery();
+  const initialRoom = query.get('room') || roomTypes[0];
   const [form, setForm] = useState({
     name: '',
     phone: '',
     arrival: '',
     departure: '',
     guests: 1,
+    roomType: initialRoom,
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (query.get('room')) {
+      setForm((prev) => ({ ...prev, roomType: query.get('room') }));
+    }
+    // eslint-disable-next-line
+  }, [query.get('room')]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        alert('Booking failed! Please try again.');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
   };
 
   return (
@@ -130,6 +165,19 @@ const Booking = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', maxWidth: 380, margin: '0 auto', textAlign: 'left' }}>
+            <label style={labelStyle} htmlFor="roomType">Room Type</label>
+            <select
+              name="roomType"
+              id="roomType"
+              value={form.roomType}
+              onChange={handleChange}
+              style={inputStyle}
+              required
+            >
+              {roomTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
             <label style={labelStyle} htmlFor="name">Full Name</label>
             <input
               type="text"

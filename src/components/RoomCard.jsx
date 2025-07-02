@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaWifi, FaTv, FaShower, FaParking } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const featureIcons = {
   wifi: <FaWifi title="WiFi" />,
@@ -9,6 +10,10 @@ const featureIcons = {
 };
 
 const RoomCard = ({ room }) => {
+  const navigate = useNavigate();
+  const handleBook = () => {
+    navigate(`/booking?room=${encodeURIComponent(room.title)}`);
+  };
   return (
     <div
       style={{
@@ -55,6 +60,7 @@ const RoomCard = ({ room }) => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
             transition: 'background 0.18s',
           }}
+          onClick={handleBook}
         >
           Book this room
         </button>

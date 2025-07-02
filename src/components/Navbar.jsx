@@ -203,6 +203,9 @@ const Navbar = () => {
           <Link to="/contact" style={{ ...linkStyle, ...(location.pathname === '/contact' ? activeStyle : {}) }} onClick={() => setOpen(false)}>
             Contact
           </Link>
+          <Link to="/admin" style={{ ...linkStyle, ...(location.pathname === '/admin' ? activeStyle : {}) }} onClick={() => setOpen(false)}>
+            Admin
+          </Link>
           <button
             style={themeBtnStyle}
             onClick={toggleTheme}

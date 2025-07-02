@@ -6,24 +6,47 @@ const email = 'linzskybes@gmail.com';
 const address = 'Rayee Hotel, Bomet Town, Bomet County, Kenya';
 const mapsEmbed = 'https://www.google.com/maps?q=Kenya+Power+Bomet+Office&output=embed';
 
+const messageTypes = [
+  'Room Inquiry',
+  'Complaints',
+  'Sales',
+  'Job Inquiry',
+  'Other',
+];
+
 const Contact = () => {
   const [form, setForm] = useState({
     name: '',
     phone: '',
-    arrival: '',
-    departure: '',
+    messageType: messageTypes[0],
+    specify: '',
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        setError('Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
   };
 
   return (
@@ -93,24 +116,28 @@ const Contact = () => {
                 required
                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem' }}
               />
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <select
+                name="messageType"
+                value={form.messageType}
+                onChange={handleChange}
+                required
+                style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem' }}
+              >
+                {messageTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              {form.messageType === 'Other' && (
                 <input
-                  type="date"
-                  name="arrival"
-                  value={form.arrival}
+                  type="text"
+                  name="specify"
+                  placeholder="Please specify down below"
+                  value={form.specify}
                   onChange={handleChange}
                   required
-                  style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem' }}
+                  style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem' }}
                 />
-                <input
-                  type="date"
-                  name="departure"
-                  value={form.departure}
-                  onChange={handleChange}
-                  required
-                  style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem' }}
-                />
-              </div>
+              )}
               <textarea
                 name="message"
                 placeholder="Message"
@@ -119,6 +146,7 @@ const Contact = () => {
                 rows={3}
                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e0e0e0', fontSize: '1rem', resize: 'vertical' }}
               />
+              {error && <div style={{ color: '#c62828', textAlign: 'center', fontWeight: 600 }}>{error}</div>}
               <button
                 type="submit"
                 style={{
