@@ -8,11 +8,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB (local)
-mongoose.connect('mongodb://localhost:27017/rayee_hotel_new', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// Connect to MongoDB (Atlas or local)
+mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose connected to MongoDB');
@@ -33,7 +30,6 @@ const bookingSchema = new mongoose.Schema({
   confirmed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
-
 const Booking = mongoose.model('Booking', bookingSchema);
 
 // Staff schema
@@ -78,7 +74,7 @@ function verifyAdminToken(req, res, next) {
   });
 }
 
-// API endpoint to create a booking
+// API endpoint to create a booking (admin only)
 app.post('/api/bookings', verifyAdminToken, async (req, res) => {
   try {
     const booking = new Booking(req.body);
@@ -144,7 +140,7 @@ app.get('/api/bookings', verifyAdminToken, async (req, res) => {
   }
 });
 
-// Contact form endpoint
+// Contact form endpoint (public)
 app.post('/api/contact', async (req, res) => {
   try {
     const contact = new ContactMessage(req.body);
@@ -176,5 +172,5 @@ app.delete('/api/contact/:id', verifyAdminToken, async (req, res) => {
   }
 });
 
-//app.listen(5000, () => console.log('Server running on port 5000')); 
- app.listen(process.env.PORT || 5000, () => console.log('Server running...'));
+// Listen on the provided port (for Render/Heroku compatibility)
+app.listen(process.env.PORT || 5000, () => console.log('Server running...'));
